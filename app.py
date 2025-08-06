@@ -1,47 +1,45 @@
-import openai
 import streamlit as st
-from dotenv import load_dotenv
-import os
 import openai
+import os
 
-load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
-# Fine-tuned model ID (must be a chat model like gpt-4o)
-fine_tuned_model_id = 'ft:gpt-4o-2024-08-06:personal:forensicai:C1Na7epu'
-
-# Streamlit UI
+# Set title
 st.title("Forensic AI Chatbot")
 
-# Initialize chat history
+# Initialize message history
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "system", "content": "You are a forensic AI assistant."}]
 
-# Get user input
-user_input = st.text_input("Ask a question:")
+# Display previous messages
+for msg in st.session_state.messages[1:]:  # Skip system message
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-# Handle user input
-if user_input:
-    st.session_state.messages.append({"role": "user", "content": user_input})
+# Chat input (better than text_input)
+user_prompt = st.chat_input("Ask a question...")
 
+if user_prompt:
+    # Add user message
+    st.session_state.messages.append({"role": "user", "content": user_prompt})
+    with st.chat_message("user"):
+        st.markdown(user_prompt)
+
+    # Call OpenAI chat model
     try:
         response = openai.ChatCompletion.create(
-            model=fine_tuned_model_id,
+            model="ft:gpt-4o-2024-08-06:personal:forensicai:C1Na7epu",
             messages=st.session_state.messages,
-            max_tokens=150,
+            max_tokens=512,
             temperature=0.7
         )
-        assistant_response = response.choices[0].message["content"].strip()
-        st.session_state.messages.append({"role": "assistant", "content": assistant_response})
+        reply = response.choices[0].message["content"].strip()
 
     except Exception as e:
-        assistant_response = "Sorry, there was an error processing your request."
-        st.session_state.messages.append({"role": "assistant", "content": assistant_response})
+        reply = "Sorry, something went wrong."
         st.error(f"Error: {e}")
 
-# Display chat history
-for message in st.session_state.messages[1:]:  # Skip system prompt
-    if message["role"] == "user":
-        st.markdown(f"**You**: {message['content']}")
-    else:
-        st.markdown(f"**AI**: {message['content']}")
+    # Add assistant message
+    st.session_state.messages.append({"role": "assistant", "content": reply})
+    with st.chat_message("assistant"):
+        st.markdown(reply)
