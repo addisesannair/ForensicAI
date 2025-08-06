@@ -1,8 +1,11 @@
 import openai
 import streamlit as st
+from dotenv import load_dotenv
+import os
+import openai
 
-# Step 1: Set up OpenAI API Key
-openai.api_key = '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'
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Fine-tuned model ID (must be a chat model like gpt-4o)
 fine_tuned_model_id = 'ft:gpt-4o-2024-08-06:personal:forensicai:C1Na7epu'
