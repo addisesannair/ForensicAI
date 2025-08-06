@@ -4,37 +4,31 @@ import streamlit as st
 # Step 1: Set up OpenAI API Key
 openai.api_key = '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'
 
-# Step 2: Fine-tuned model ID
-fine_tuned_model_id = 'ft:gpt-4o-2024-08-06:personal:forensicai:C1Na7epu'  # Replace this with your fine-tuned model ID
+# Fine-tuned model ID (must be a chat model like gpt-4o)
+fine_tuned_model_id = 'ft:gpt-4o-2024-08-06:personal:forensicai:C1Na7epu'
 
-# Step 3: Streamlit UI for chatbot
+# Streamlit UI
 st.title("Forensic AI Chatbot")
 
-# Initialize chat history in session state
+# Initialize chat history
 if "messages" not in st.session_state:
-    st.session_state.messages = []
+    st.session_state.messages = [{"role": "system", "content": "You are a forensic AI assistant."}]
 
-# Step 4: Get user input
+# Get user input
 user_input = st.text_input("Ask a question:")
 
-# Step 5: When user inputs a message, call the fine-tuned model
+# Handle user input
 if user_input:
-    # Add user input to chat history
     st.session_state.messages.append({"role": "user", "content": user_input})
 
-    # Generate a response from the fine-tuned model
     try:
-        response = openai.Completion.create(
+        response = openai.ChatCompletion.create(
             model=fine_tuned_model_id,
-            prompt=user_input,
+            messages=st.session_state.messages,
             max_tokens=150,
-            n=1,
-            stop=None,
             temperature=0.7
         )
-        assistant_response = response.choices[0].text.strip()
-
-        # Add assistant's response to chat history
+        assistant_response = response.choices[0].message["content"].strip()
         st.session_state.messages.append({"role": "assistant", "content": assistant_response})
 
     except Exception as e:
@@ -42,9 +36,9 @@ if user_input:
         st.session_state.messages.append({"role": "assistant", "content": assistant_response})
         st.error(f"Error: {e}")
 
-# Step 6: Display chat history
-for message in st.session_state.messages:
+# Display chat history
+for message in st.session_state.messages[1:]:  # Skip system prompt
     if message["role"] == "user":
-        st.markdown(f"*You*: {message['content']}")
+        st.markdown(f"**You**: {message['content']}")
     else:
-        st.markdown(f"*AI*: {message['content']}")
+        st.markdown(f"**AI**: {message['content']}")
