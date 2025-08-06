@@ -2,7 +2,7 @@ import openai
 import streamlit as st
 
 # Step 1: Set up OpenAI API Key
-openai.api_key = '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'
+openai.api_key = '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'
 
 # Step 2: Fine-tuned model ID
 fine_tuned_model_id = 'ft:gpt-4o-2024-08-06:personal:forensicai:C1Na7epu'  # Replace this with your fine-tuned model ID
